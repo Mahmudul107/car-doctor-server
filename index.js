@@ -1,5 +1,6 @@
 const express = require("express");
-const cors = require("cors");
+const cors = require("cors"); //cors
+const jwt = require("jsonwebtoken"); //jwt
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb"); //MongoDB requires Mongo
 require("dotenv").config(); //environment configuration
 const app = express();
@@ -32,6 +33,18 @@ async function run() {
     const serviceCollection = client.db("carDoctors").collection("services");
     const bookingCollection = client.db("carDoctors").collection("bookings");
 
+
+    // When a user logged in, then it wil hit JWT ( Receiving user information from the client side).
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '1h' // Set duration 
+      })
+      res.send({token}); // Send an object token
+    })
+
+    // Services Routes
     app.get("/services", async (req, res) => {
       const cursor = serviceCollection.find();
       const result = await cursor.toArray();
@@ -51,7 +64,7 @@ async function run() {
       res.send(result);
     });
 
-    // Bookings
+    // Bookings Routes
     app.get("/bookings", async (req, res) => {
       console.log(req.query.email);
       let query = {};
